@@ -1,37 +1,38 @@
 const express = require('express');
 const MongoClient = require('mongodb').MongoClient;
-const ejs = require('ejs');
 
 const app = express();
 const port = 3000;
 
-// Connect to MongoDB
-MongoClient.connect('mongodb://localhost:27017', {
-    useUnifiedTopology: true
-})
-    .then(client => {
-        const db = client.db('yallakora');
+// MongoDB connection URL
+const url = 'mongodb://localhost:27017';
+const dbName = 'yallakora';
+
+// API endpoint to retrieve the match details
+app.get('/matches', (req, res) => {
+    MongoClient.connect(url, (err, client) => {
+        if (err) {
+            console.error('Error connecting to MongoDB:', err);
+            res.status(500).json({ error: 'An error occurred' });
+            return;
+        }
+
+        const db = client.db(dbName);
         const collection = db.collection('matches_details');
 
-        app.set('view engine', 'ejs');
+        collection.find().toArray((err, docs) => {
+            if (err) {
+                console.error('Error retrieving data from MongoDB:', err);
+                res.status(500).json({ error: 'An error occurred' });
+                return;
+            }
 
-        // Define a route to fetch and display the data
-        app.get('/', (req, res) => {
-            collection.find().toArray()
-                .then(matches => {
-                    res.render('index', { matches });
-                })
-                .catch(error => {
-                    console.error('An error occurred:', error);
-                    res.send('An error occurred.');
-                });
+            res.json(docs);
         });
-
-        // Start the server
-        app.listen(port, () => {
-            console.log(`Server running on port ${port}`);
-        });
-    })
-    .catch(error => {
-        console.error('Failed to connect to MongoDB:', error);
     });
+});
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Server is listening on port ${port}`);
+});

@@ -7,7 +7,7 @@ date = datetime.date.today().strftime("%m/%d/%Y")
 
 page = requests.get(f"https://www.yallakora.com/Match-Center/?date={date}")
 
-def main(page):
+def yallakora(page):
     src = page.content
 
     soup = BeautifulSoup(src, "lxml")
@@ -62,4 +62,4 @@ def main(page):
     finally:
         client.close()
 
-main(page)
+yallakora(page)
